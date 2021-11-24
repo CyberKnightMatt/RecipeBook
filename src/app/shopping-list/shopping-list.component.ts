@@ -16,4 +16,13 @@ export class ShoppingListComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  onIngredientAdded(ingredient: Ingredient) {
+    const index = this.ingredients.findIndex(i => i.name.toLowerCase() === ingredient.name.toLowerCase());
+    if (index !== -1) {
+      this.ingredients[index].amount =  +this.ingredients[index].amount + +ingredient.amount;
+    } else {
+      this.ingredients.push(ingredient);
+    }
+  }
+
 }
