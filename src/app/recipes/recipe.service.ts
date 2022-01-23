@@ -1,3 +1,4 @@
+import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Subject } from "rxjs";
 import { Ingredient } from "../shared/ingredient.model";
@@ -8,27 +9,29 @@ import { Recipe } from "./recipe.model";
 export class RecipeService {  
 
   private recipes: Recipe[] = [
-    new Recipe(
-      'A Test Recipe', 
-      'This is simply a test', 
-      'https://p0.pxfuel.com/preview/422/435/800/crust-roast-meat-food-dinner.jpg',
-      [
-        new Ingredient('Meat', 1),
-        new Ingredient('Potatoes', 5)
-      ]),
-    new Recipe(
-      'Another Test Recipe', 
-      'This is simply a test', 
-      'https://p0.pxfuel.com/preview/422/435/800/crust-roast-meat-food-dinner.jpg',
-      [
-        new Ingredient('Meat', 2),
-        new Ingredient("Bread", 2)
-      ])
+    // new Recipe(
+    //   'A Test Recipe', 
+    //   'This is simply a test', 
+    //   'https://p0.pxfuel.com/preview/422/435/800/crust-roast-meat-food-dinner.jpg',
+    //   [
+    //     new Ingredient('Meat', 1),
+    //     new Ingredient('Potatoes', 5)
+    //   ]),
+    // new Recipe(
+    //   'Another Test Recipe', 
+    //   'This is simply a test', 
+    //   'https://p0.pxfuel.com/preview/422/435/800/crust-roast-meat-food-dinner.jpg',
+    //   [
+    //     new Ingredient('Meat', 2),
+    //     new Ingredient("Bread", 2)
+    //   ])
   ];
 
   recipesChanged = new BehaviorSubject<Recipe[]>(this.recipes.slice());
 
-  constructor(private shoppingListService: ShoppingListService) {}
+  constructor(
+      private shoppingListService: ShoppingListService, 
+      private http: HttpClient) {}
 
   getRecipes() {
     return this.recipes.slice();
@@ -54,5 +57,17 @@ export class RecipeService {
 
   deleteRecipe(index: number) {
     this.recipesChanged.next( this.recipes.splice(index, 1));
+  }
+
+  storeRecipes() {
+    // implement pop up when finished loading
+    this.http.put(`https://recipe-book-f8001.firebaseio.com/recipes.json`, this.recipes).subscribe();
+  }
+
+  fetchRecipes() {
+    this.http.get<Recipe[]>(`https://recipe-book-f8001.firebaseio.com/recipes.json`).subscribe(recipes => {
+      this.recipes = recipes;
+      this.recipesChanged.next(this.recipes.slice());
+    });
   }
 }
