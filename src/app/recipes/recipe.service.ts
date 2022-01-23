@@ -4,7 +4,7 @@ import { BehaviorSubject } from "rxjs";
 import { Ingredient } from "../shared/ingredient.model";
 import { ShoppingListService } from "../shopping-list/shopping-list.service";
 import { Recipe } from "./recipe.model";
-import { map } from "rxjs/operators";
+import { map, tap } from "rxjs/operators";
 
 @Injectable()
 export class RecipeService {  
@@ -66,7 +66,7 @@ export class RecipeService {
   }
 
   fetchRecipes() {
-    this.http.get<Recipe[]>(`https://recipe-book-f8001.firebaseio.com/recipes.json`)
+    return this.http.get<Recipe[]>(`https://recipe-book-f8001.firebaseio.com/recipes.json`)
     .pipe(map(recipes => {
       return recipes.map(recipe => {
         return {
@@ -75,9 +75,9 @@ export class RecipeService {
         }
       })
     }))
-    .subscribe(recipes => {
+    .pipe(tap(recipes => {
       this.recipes = recipes;
       this.recipesChanged.next(this.recipes.slice());
-    });
+    }))
   }
 }
