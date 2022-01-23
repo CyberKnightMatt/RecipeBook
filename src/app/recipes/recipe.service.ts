@@ -1,9 +1,10 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { BehaviorSubject, Subject } from "rxjs";
+import { BehaviorSubject } from "rxjs";
 import { Ingredient } from "../shared/ingredient.model";
 import { ShoppingListService } from "../shopping-list/shopping-list.service";
 import { Recipe } from "./recipe.model";
+import { map } from "rxjs/operators";
 
 @Injectable()
 export class RecipeService {  
@@ -65,7 +66,16 @@ export class RecipeService {
   }
 
   fetchRecipes() {
-    this.http.get<Recipe[]>(`https://recipe-book-f8001.firebaseio.com/recipes.json`).subscribe(recipes => {
+    this.http.get<Recipe[]>(`https://recipe-book-f8001.firebaseio.com/recipes.json`)
+    .pipe(map(recipes => {
+      return recipes.map(recipe => {
+        return {
+          ...recipe,
+          ingredients: recipe.ingredients || []
+        }
+      })
+    }))
+    .subscribe(recipes => {
       this.recipes = recipes;
       this.recipesChanged.next(this.recipes.slice());
     });
