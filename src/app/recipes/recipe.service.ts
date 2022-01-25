@@ -5,6 +5,7 @@ import { Ingredient } from "../shared/ingredient.model";
 import { ShoppingListService } from "../shopping-list/shopping-list.service";
 import { Recipe } from "./recipe.model";
 import { map, tap } from "rxjs/operators";
+import { AuthService } from "../auth/auth.service";
 
 @Injectable()
 export class RecipeService {  
@@ -32,7 +33,8 @@ export class RecipeService {
 
   constructor(
       private shoppingListService: ShoppingListService, 
-      private http: HttpClient) {}
+      private http: HttpClient,
+      private authService: AuthService) {}
 
   getRecipes() {
     return this.recipes.slice();
