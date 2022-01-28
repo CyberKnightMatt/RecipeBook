@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
+import { AlertComponent } from '../shared/alert/alert.component';
+import { PlaceholderDirective } from '../shared/placeholder/placeholder.directive';
 import { AuthResponseData, AuthService } from './auth.service';
 
 @Component({
@@ -9,21 +12,28 @@ import { AuthResponseData, AuthService } from './auth.service';
   templateUrl: './auth.component.html',
   styleUrls: ['./auth.component.css']
 })
-export class AuthComponent implements OnInit {
+export class AuthComponent implements OnInit, OnDestroy {
+  @ViewChild(PlaceholderDirective, {static: false}) alertHost: PlaceholderDirective;
   isLoginMode = true;
   form: FormGroup;
   isLoading = false;
   error: string = null;
+  closeSub: Subscription;
 
   constructor(
     private authService: AuthService,
-    private router: Router) { }
+    private router: Router,
+    private componentFactoryResolver: ComponentFactoryResolver) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
       'email':    new FormControl('', [Validators.required, Validators.email]),
       'password': new FormControl('', [Validators.required, Validators.minLength(6)])
     });
+  }
+
+  ngOnDestroy(): void {
+    this.closeSub?.unsubscribe();
   }
 
   onSwitchMode() {
@@ -50,12 +60,11 @@ export class AuthComponent implements OnInit {
 
     authObs.subscribe({
       next: data => { 
-        console.log(data)
         this.isLoading = false;
         this.router.navigate(['/recipes']);
       },
       error: errorMessage => { 
-        this.error = errorMessage;
+        this.showErrorAlert(errorMessage);
         this.isLoading = false;
       }
     })
@@ -63,5 +72,20 @@ export class AuthComponent implements OnInit {
     this.form.reset();
   }
 
+  onHandleError() {
+    this.error = null;
+  }
   
+  private showErrorAlert(message: string) {
+    const alertComponentFactory = this.componentFactoryResolver.resolveComponentFactory(AlertComponent);
+    const hostViewContainerRef = this.alertHost.viewContainerRef;
+    hostViewContainerRef.clear();
+
+    const componentRef = hostViewContainerRef.createComponent(alertComponentFactory);
+    componentRef.instance.message = message;
+    this.closeSub = componentRef.instance.close.subscribe(() => {
+      this.closeSub.unsubscribe();
+      hostViewContainerRef.clear();
+    });
+  }
 }
