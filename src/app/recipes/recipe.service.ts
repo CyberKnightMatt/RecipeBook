@@ -2,46 +2,32 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 import { Ingredient } from "../shared/ingredient.model";
-import { ShoppingListService } from "../shopping-list/shopping-list.service";
 import { Recipe } from "./recipe.model";
 import { map, tap } from "rxjs/operators";
 import { AuthService } from "../auth/auth.service";
+import { Store } from "@ngrx/store";
+import * as ShoppingListActions from '../shopping-list/store/shopping-list.actions'
+import * as fromShoppingList from '../shopping-list/store/shopping-list.reducers';
 
 @Injectable()
 export class RecipeService {  
 
   private recipes: Recipe[] = [
-    // new Recipe(
-    //   'A Test Recipe', 
-    //   'This is simply a test', 
-    //   'https://p0.pxfuel.com/preview/422/435/800/crust-roast-meat-food-dinner.jpg',
-    //   [
-    //     new Ingredient('Meat', 1),
-    //     new Ingredient('Potatoes', 5)
-    //   ]),
-    // new Recipe(
-    //   'Another Test Recipe', 
-    //   'This is simply a test', 
-    //   'https://p0.pxfuel.com/preview/422/435/800/crust-roast-meat-food-dinner.jpg',
-    //   [
-    //     new Ingredient('Meat', 2),
-    //     new Ingredient("Bread", 2)
-    //   ])
   ];
 
   recipesChanged = new BehaviorSubject<Recipe[]>(this.recipes.slice());
 
   constructor(
-      private shoppingListService: ShoppingListService, 
       private http: HttpClient,
-      private authService: AuthService) {}
+      private authService: AuthService,
+      private store: Store<fromShoppingList.AppState>) {}
 
   getRecipes() {
     return this.recipes.slice();
   }
 
   addIngredientsToShoppingList(ingredients: Ingredient[]) {
-    this.shoppingListService.addIngredients(ingredients);
+    this.store.dispatch(new ShoppingListActions.AddIngredients(ingredients));
   }
 
   getRecipe(index: number) {
