@@ -13,7 +13,6 @@ import { AuthResponseData, AuthService } from './auth.service';
   styleUrls: ['./auth.component.css']
 })
 export class AuthComponent implements OnInit, OnDestroy {
-  @ViewChild(PlaceholderDirective, {static: false}) alertHost: PlaceholderDirective;
   isLoginMode = true;
   form: FormGroup;
   isLoading = false;
@@ -22,8 +21,7 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private router: Router,
-    private componentFactoryResolver: ComponentFactoryResolver) { }
+    private router: Router) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -64,7 +62,7 @@ export class AuthComponent implements OnInit, OnDestroy {
         this.router.navigate(['/recipes']);
       },
       error: errorMessage => { 
-        this.showErrorAlert(errorMessage);
+        this.error = errorMessage;
         this.isLoading = false;
       }
     })
@@ -74,18 +72,5 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   onHandleError() {
     this.error = null;
-  }
-  
-  private showErrorAlert(message: string) {
-    const alertComponentFactory = this.componentFactoryResolver.resolveComponentFactory(AlertComponent);
-    const hostViewContainerRef = this.alertHost.viewContainerRef;
-    hostViewContainerRef.clear();
-
-    const componentRef = hostViewContainerRef.createComponent(alertComponentFactory);
-    componentRef.instance.message = message;
-    this.closeSub = componentRef.instance.close.subscribe(() => {
-      this.closeSub.unsubscribe();
-      hostViewContainerRef.clear();
-    });
   }
 }
