@@ -1,8 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { RecipeService } from '../recipes/recipe.service';
+import * as fromApp from '../store/app.reducer';
 
 @Component({
   selector: 'app-header',
@@ -16,10 +19,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   constructor(private recipeService: RecipeService,
     private authService: AuthService,
-    private router: Router) { }
+    private router: Router,
+    private store: Store<fromApp.AppState>) { }
 
   ngOnInit(): void {
-    this.userSub = this.authService.user.subscribe(user => {
+    this.userSub = this.store
+    .select('auth')
+    .pipe(map(authState => authState.user))
+    .subscribe(user => {
       this.isAuthenticated = !!user;
     })
   }
